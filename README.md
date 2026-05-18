@@ -1,286 +1,95 @@
 # 🧠 AI Workflow MRI
 
-## Causal Observability & Diagnostic Engine for Complex ML Pipelines
+**Visualizing Hidden Failures in Complex AI Systems**
 
-Traditional observability tools give developers dashboards of raw metrics and stack traces, leaving them to manually trace the root cause. **AI Workflow MRI** is an automated diagnostic engine that acts as an **"MRI" for machine learning pipelines**.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-red?style=for-the-badge&logo=streamlit)](https://ai-workflow-mri-46vv9wjuftbkzon9kij64b.streamlit.app/)
 
-It intercepts live runtime errors, visually maps downstream **blast radius propagation**, and uses Local or Cloud AI to generate highly technical causal reports — while exposing hidden cognitive failure states that conventional observability platforms completely ignore.
+**🌐 Access the Live Application Here:** [AI Workflow MRI Streamlit App](https://ai-workflow-mri-46vv9wjuftbkzon9kij64b.streamlit.app/)
 
----
-
-# 🌐 Live Deployment
-
-https://ai-workflow-mri-46vv9wjuftbkzon9kij64b.streamlit.app/
+AI Workflow MRI is a diagnostic and observability tool built with Streamlit. It helps AI engineers, site reliability engineers (SREs), and developers visualize, simulate, and diagnose failures in complex multi-agent LLM pipelines. Whether you are dealing with hard infrastructure crashes, semantic hallucinations, or context-window blind spots, this tool maps the "blast radius" and provides automated root-cause analysis.
 
 ---
 
-# 🚀 Key Advanced Features
+## ✨ Key Features
 
-## 📡 Live Production Monitor
-
-Connects to external Python scripts via file-based telemetry to intercept runtime failures instantly and dynamically decode execution cascades.
-
----
-
-## 💻 Static Code & Workspace Analyzer (SAST)
-
-Reads raw ML pipeline code blocks or accepts whole-directory project uploads (`.py`, `.json`), parsing cross-file safety dependencies to build an interactive **Architectural Risk Matrix**.
+* **🕹️ Interactive Simulator**: Inject simulated failures into a standard AI pipeline DAG (Directed Acyclic Graph) to visualize how errors propagate. Simulates structural crashes, semantic contagion (hallucinations), intent decay (drift), and attention collapse (blind spots).
+* **🧪 Live Cognitive Sandbox**: Input real prompts and agent outputs to calculate real-time "Intent Fidelity" and "Semantic Entropy" scores.
+* **💻 Static Code Analyzer**: Paste individual scripts or upload whole project directories (via `.py` and `.json` files) to generate an architectural Blast Radius Risk Matrix using LLM-powered code auditing.
+* **📡 Live Production Monitor**: A file-based telemetry listener (`pipeline_status.json`) that monitors shared production environments and dynamically maps the health of active streams.
+* **🔌 Universal AI Engine Support**:
+    * **Native Google Gemini**: Connect directly using your Gemini API key.
+    * **Universal Connection**: Works with Cloud API providers like OpenRouter and OpenAI, or local instances like Ollama and LM Studio.
 
 ---
 
-## 🕹️ Interactive Cognitive Simulator
+## 📂 Project Structure
 
-An advanced visual sandbox designed to inject both infrastructure failures and frontier cognitive pathologies:
-
-### 🦠 Semantic Contagion (Hallucination Tracking)
-
-Traces how a single corrupted document or false fact retrieved by a Vector DB silently propagates downstream, infecting reasoning agents through epistemic laundering.
-
-### 🌫️ Semantic Goal Drift (Intent Decay)
-
-Visualizes degradation of constraint adherence over long multi-agent loops where original user directives fade across cascading reasoning hops.
-
-### 🔍 Context Window Blind Spot (Attention Collapse)
-
-Maps transformer-level *Lost in the Middle* anomalies, highlighting pathways where oversized context windows starve critical information streams.
-
----
-
-## 🧪 Live Cognitive Sandbox
-
-Operational experimentation bay that evaluates live text interactions against system prompts to dynamically estimate:
-
-* Intent Fidelity %
-* Semantic Entropy States
-* Context Integrity
-* Reasoning Stability
-
----
-
-## 🔒 Model-Agnostic Engine Router
-
-Engineered with a universal backend routing layer supporting:
-
-* OpenRouter
-* OpenAI APIs
-* Google Gemini
-* Ollama local inference
-* Enterprise local clusters
-* Open-source LLM pipelines
-
----
-
-# 🧠 Frontier Research Concepts
-
-AI Workflow MRI explores emerging cognitive observability problems that traditional monitoring systems cannot detect:
-
-* Semantic corruption propagation
-* Hallucination root-cause tracing
-* AI reasoning instability
-* Multi-agent intent drift
-* Context poisoning
-* Retrieval corruption
-* Cognitive workflow degradation
-* Semantic entropy accumulation
-* Long-chain reasoning collapse
-* AI trustworthiness diagnostics
-
-The project attempts to treat AI systems not merely as software pipelines — but as evolving cognitive systems requiring semantic-level observability.
-
----
-
-# 🏗️ Architecture & Telemetry
-
-This project demonstrates a decoupled telemetry architecture:
-
-## ⚙️ The Worker (`pipeline.py`)
-
-The actual ML script executing data operations. If it crashes, it catches exceptions and emits structured JSON telemetry payloads.
-
----
-
-## 📬 The Mailbox (`pipeline_status.json`)
-
-A shared local telemetry layer acting as a lightweight secure message broker between workflow execution and observability systems.
-
----
-
-## 🖥️ The Dashboard (`app.py`)
-
-The Streamlit observability interface that:
-
-* polls telemetry continuously
-* updates Graphviz workflow nodes
-* visualizes blast radius propagation
-* routes context into AI diagnostic engines
-* generates semantic causal analysis
-
----
-
-# 🛠️ Tech Stack
-
-## Frontend
-
-* Streamlit
-* Graphviz
-
-## Backend
-
-* Python
-* JSON Telemetry
-
-## AI Systems
-
-* Ollama
-* Qwen
-* OpenAI-compatible APIs
-* Gemini APIs
-* OpenRouter support
-
----
-
-# 🏃‍♂️ How to Run Locally
-
-## 1️⃣ Prerequisites
-
-Install:
-
-* Python 3.8+
-* Ollama (for local AI diagnostics)
-
-Download Ollama:
-https://ollama.com/
-
-Pull the default local model:
-
-```bash
-ollama run qwen2.5:3b
+```text
+ai-workflow-mri/
+├── app.py                   # Main Streamlit application
+├── pipeline.py              # Mock/External pipeline execution script
+├── pipeline_status.json     # Telemetry mailbox for the Live Monitor
+├── requirements.txt         # Project dependencies
+└── README.md                # Project documentation
 ```
 
-# 2️⃣ Installation
+---
 
-Clone the repository and install dependencies:
+## 🚀 Getting Started
 
-```bash
-git clone https://github.com/bhavesh576/ai-workflow-mri.git
-cd ai-workflow-mri
-pip install -r requirements.txt
-```
+### Prerequisites
+Make sure you have Python 3.8+ installed. You will also need system-level support for Graphviz to render the pipeline charts.
 
-# 3️⃣ Launch the Observability Hub
+### Installation
 
-Start the Streamlit application:
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/bhavesh576/ai-workflow-mri.git](https://github.com/bhavesh576/ai-workflow-mri.git)
+   cd ai-workflow-mri
+   ```
 
+2. **Install the dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+   *(Note: Ensure your `requirements.txt` includes `streamlit`, `graphviz`, `requests`, and `google-generativeai`)*
+
+3. **Install System-level Graphviz:**
+   * **Windows:** Download and install from [Graphviz Downloads](https://graphviz.org/download/) (ensure it's added to your system PATH).
+   * **macOS:** `brew install graphviz`
+   * **Linux (Ubuntu/Debian):** `sudo apt-get install graphviz`
+
+### Running the App Locally
+
+Start the Streamlit server:
 ```bash
 streamlit run app.py
 ```
+The app will automatically open in your default web browser at `http://localhost:8501`.
 
 ---
 
-# 4️⃣ Engine Configuration
+## ⚙️ Configuration & Usage
 
-By default, the platform boots with a pre-configured cloud inference endpoint.
+Once the app is running, use the **⚙️ Engine Settings** sidebar to configure your AI Backend:
 
-To enable privacy-first offline local AI execution:
+### Option A: Google Gemini
+1. Select "Google Gemini" as the AI Backend.
+2. Input your Gemini API Key (Starts with `AIza...`).
 
-## Step 1
-
-Start Ollama locally.
-
-## Step 2
-
-Pull and run your preferred local model:
-
-```bash
-ollama run qwen2.5:3b
-```
-
-## Step 3
-
-Inside the Streamlit sidebar configuration:
-
-Set:
-
-```txt
-API Endpoint URL:
-http://localhost:11434/v1/chat/completions
-```
-
-Clear:
-
-```txt
-API Key:
-(empty)
-```
-
-This fully decouples the system from external cloud inference providers and enables local cognitive diagnostics.
+### Option B: Universal (Local / OpenRouter / Cloud)
+1. Select "Universal Connection".
+2. **For OpenRouter (Cloud):** Use the default endpoint `https://openrouter.ai/api/v1/chat/completions`, choose your Model ID (e.g., `openrouter/free`), and input your API key.
+3. **For Local (Ollama/LM Studio):** Point the API Endpoint URL to your local host (e.g., `http://localhost:11434/v1/chat/completions`), specify the local model name, and leave the API key blank or type a dummy key if required.
 
 ---
 
-# 🔬 Conceptual Vision
+## 🤝 Contributing
 
-AI Workflow MRI is designed around a future-facing question:
-
-> “How do we observe hidden semantic and cognitive failures inside intelligent systems?”
-
-Rather than focusing only on infrastructure metrics, the platform experiments with cognitive observability concepts such as:
-
-* reasoning integrity
-* semantic corruption
-* hallucination propagation
-* intent decay
-* cognitive drift
-* hidden workflow degradation
-
-The long-term vision is to evolve toward:
-
-## “Cognitive Observability for Artificial Intelligence Systems”
-
-A future where AI systems are debugged not only as software pipelines — but as complex reasoning ecosystems.
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute.
 
 ---
 
-# ⚠️ Current Status
+## 📝 License
 
-This project is currently a progressive research-style prototype built for:
-
-* AI systems engineering exploration
-* observability experimentation
-* semantic failure analysis
-* cognitive debugging research
-* recruiter-facing innovation demos
-* advanced portfolio development
-
----
-
-# 👨‍💻 Developer
-
-Bhavesh Tarale
-
-GitHub:
-https://github.com/bhavesh576
-
----
-
-# 📌 Future Directions
-
-Planned experimental directions include:
-
-* hallucination origin tracing
-* semantic blast-radius mapping
-* multi-agent corruption analysis
-* cognitive dependency graphs
-* trustworthiness scoring
-* semantic entropy tracking
-* AI debate observability
-* autonomous remediation systems
-* reasoning lineage visualization
-* cognitive black-box replay systems
-
----
-
-# 🧩 Core Philosophy
-
-Traditional observability platforms monitor systems.
-
-AI Workflow MRI attempts to monitor cognition itself.
+This project is open-source and available under the MIT License.
