@@ -23,6 +23,7 @@ This project demonstrates a decoupled telemetry architecture.
 * **Backend:** Python, JSON Telemetry
 * **AI Engine:** Universal API router supporting Local AI (Ollama/Qwen) and Cloud AI (Google Gemini)
 
+https://ai-workflow-mri-46vv9wjuftbkzon9kij64b.streamlit.app/
 ---
 
 ## 🏃‍♂️ How to Run Locally
