@@ -305,13 +305,21 @@ with tab1:
                     st.write(raw_probe_result)
 
 # ---------------------------------------------------------
-# TAB 2: STATIC CODE ANALYZER
+# TAB 2: STATIC CODE ANALYZER (UPGRADED FOR MULTI-FILE SCANNING)
 # ---------------------------------------------------------
 with tab2:
     st.markdown("#### 💻 Code-Aware Diagnostic Engine & Vulnerability Profiler")
-    st.caption("Paste your production pipeline execution scripts below. The core observer will dynamically construct an architectural blast radius matrix.")
-    
-    default_code = """import pandas as pd
+    st.caption("Analyze single execution scripts or upload an entire local project structure to map architectural blast radiuses.")
+
+    # NEW: Mode Selection Switch
+    upload_mode = st.radio("Select Analysis Scope:", ["Single File Script", "Whole Project Directory"], horizontal=True)
+    st.markdown("---")
+
+    code_to_analyze = ""
+
+    if upload_mode == "Single File Script":
+        # Standard Single File Input Box
+        default_code = """import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
@@ -330,7 +338,27 @@ pipeline = Pipeline([
 pipeline.fit(X, y)
 predictions = pipeline.predict(X)"""
 
-    custom_code = st.text_area("1. Paste ML Pipeline Code:", value=default_code, height=200)
+        code_to_analyze = st.text_area("1. Paste ML Pipeline Code:", value=default_code, height=200)
+
+    else:
+        # NEW: Multi-File Workspace Dropzone
+        uploaded_files = st.file_uploader(
+            "1. Drag & drop multiple project files (.py, .json) concurrently:", 
+            type=["py", "json"], 
+            accept_multiple_files=True
+        )
+        if uploaded_files:
+            # Aggregate all file contents into one unified context map for the AI
+            for file in uploaded_files:
+                try:
+                    file_contents = file.read().decode("utf-8")
+                    code_to_analyze += f"\n\n--- FILE: {file.name} ---\n{file_contents}"
+                except Exception as e:
+                    st.warning(f"Could not parse file {file.name}: {str(e)}")
+        else:
+            st.info("📂 Awaiting multi-file workspace allocation. Drag your project scripts above to begin.")
+
+    # Context Input Columns (Stay the same)
     col_a, col_b = st.columns(2)
     with col_a:
         failure_point = st.text_input("2. Target Identity Vector / Component Name:", value="StandardScaler")
@@ -338,25 +366,28 @@ predictions = pipeline.predict(X)"""
         error_symptom = st.text_input("3. Exception Symptom / Error Log Trace:", value="ValueError: Input contains NaN, infinity or a value too large.")
 
     if st.button("🚨 Run Cognitive Code Audit", type="primary"):
-        st.markdown("---")
-        st.markdown(f"### 🔬 Architectural Audit Report: `{failure_point}`")
-        
-        with st.spinner("Analyzing code hierarchy and parsing structural safety vectors..."):
-            diagnostic_prompt = f"""
-            Analyze this ML Pipeline Code execution script:
-            ```python
-            {custom_code}
-            ```
-            A failure occurred at component: {failure_point}
-            Symptom payload: {error_symptom}
+        if not code_to_analyze:
+            st.warning("⚠️ Analysis payload is empty. Please insert script code or drop repository files first.")
+        else:
+            st.markdown("---")
+            st.markdown(f"### 🔬 Architectural Audit Report: `{failure_point}`")
             
-            Task:
-            1. Write a precise 3-sentence technical deduction outlining how this structural exception forces a downstream cascade.
-            2. Build an architectural 'Blast Radius Risk Matrix' Markdown Table with the columns: | Component | Vulnerability Type | Severity | Mitigation Control |. Populate it with rows addressing the target failed node, cascading impacts to subsequent pipeline fitting operations, and final artifact/variable starvation.
-            """
-            explanation = call_ai(diagnostic_prompt, "You are a Principal AI Systems Observability Engineer.")
-            st.markdown(explanation)
-
+            with st.spinner("Analyzing modular code mapping and parsing architectural safety dependencies..."):
+                # The prompt now informs the AI it might be looking at a multi-file project structure!
+                diagnostic_prompt = f"""
+                Analyze this multi-file codebase structure:
+                ```
+                {code_to_analyze}
+                ```
+                A cross-file failure point occurred at component: {failure_point}
+                Symptom payload: {error_symptom}
+                
+                Task:
+                1. Write a precise 3-sentence technical deduction outlining how this exception maps across files and forces a downstream cascade.
+                2. Build an architectural 'Blast Radius Risk Matrix' Markdown Table with the columns: | Component | Vulnerability Type | Severity | Mitigation Control |. Populate it with rows evaluating cross-file code dependency risks, variable starvation tracks, and modular failures.
+                """
+                explanation = call_ai(diagnostic_prompt, "You are a Principal AI Systems Observability Engineer.")
+                st.markdown(explanation)
 # ---------------------------------------------------------
 # TAB 3: LIVE PRODUCTION MONITOR (UPGRADED VERSION)
 # ---------------------------------------------------------
