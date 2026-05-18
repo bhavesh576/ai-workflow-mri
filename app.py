@@ -220,5 +220,58 @@ with tab2:
         st.markdown("---")
         st.markdown(f"### 🔬 Diagnostic Report: `{failure_point}`")
         with st.spinner("Analyzing code structure and mapping blast radius..."):
-            diagnostic_prompt = f"Analyze this ML Pipeline Code:\n
-http://googleusercontent.com/immersive_entry_chip/0
+            diagnostic_prompt = f"""
+            Analyze this ML Pipeline Code:
+            ```python
+            {custom_code}
+            ```
+            A critical failure occurred at: {failure_point}
+            Error/Symptom: {error_symptom}
+            Task: 
+            1. Identify how this specific failure disrupts the code execution path. 
+            2. Explain the blast radius. 
+            3. Provide ONE highly specific code-level fix. 
+            Keep it under 4 sentences.
+            """
+            explanation = call_ai(diagnostic_prompt, "You are an expert Python code analyzer.")
+            st.error(explanation)
+
+# ---------------------------------------------------------
+# TAB 3: LIVE PRODUCTION MONITOR
+# ---------------------------------------------------------
+with tab3:
+    st.markdown("#### 📡 Real-Time Script Monitoring")
+    st.markdown(f"**Current Shared Pipeline Status:** `{live_scenario.upper()}`")
+    col_live_a, col_live_b = st.columns([1, 2.5])
+    
+    with col_live_a:
+        st.markdown("#### Status Details")
+        if live_scenario == "healthy":
+            st.success("All clear! No script errors detected.")
+        else:
+            if live_scenario == "hallucination":
+                st.error(f"🦠 COGNITIVE INFECTION DETECTED: {WORKFLOW_NODES['retriever'].upper()}")
+            else:
+                st.error(f"💥 CRASH DETECTED AT: {WORKFLOW_NODES.get(live_scenario, live_scenario).upper()}")
+            st.text_area("Captured Error Log / Symptom:", value=live_error, height=100)
+            
+        if st.button("🧹 Clear Live Error File"):
+            if os.path.exists("pipeline_status.json"):
+                os.remove("pipeline_status.json")
+                st.rerun() 
+    
+    with col_live_b:
+        live_graph = build_mri_graph(live_scenario)
+        st.graphviz_chart(live_graph, width='stretch')
+        
+    st.markdown("---")
+    if live_scenario != "healthy":
+        st.markdown("### 🤖 Automated Causal Diagnostic")
+        with st.spinner("Analyzing live log data via AI..."):
+            diagnostic_prompt = f"""
+            The live ML pipeline script experienced an event at '{WORKFLOW_NODES.get(live_scenario, live_scenario)}' 
+            with the log/symptom: '{live_error}'. 
+            Explain the downstream blast radius in 3 sentences.
+            """
+            explanation = call_ai(diagnostic_prompt, "You are an expert systems debugging assistant.")
+            st.error(explanation)
