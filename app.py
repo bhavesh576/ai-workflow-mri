@@ -32,7 +32,7 @@ if ai_mode == "Universal (Local / OpenRouter / Cloud)":
     st.sidebar.caption("Works with Ollama, LM Studio, OpenRouter, OpenAI, etc.")
     
     local_api_url = st.sidebar.text_input("API Endpoint URL", value="http://localhost:11434/v1/chat/completions")
-    local_model_name = st.sidebar.text_input("Model ID", value="qwen2.5:3b")
+    local_model_name = st.sidebar.text_input("Model ID", value="openrouter/free")
     custom_api_key = st.sidebar.text_input("API Key (Leave blank for local)", type="password")
 
 elif ai_mode == "Google Gemini":
@@ -81,7 +81,6 @@ def build_mri_graph(failure_point):
 
     for key, label in WORKFLOW_NODES.items():
         if is_virus:
-            # 🦠 VIRUS MODE (Purple Semantic Infection)
             if key == "retriever": 
                 graph.node(key, label, fillcolor="#d9b3ff", color="#8000ff", penwidth="2")
             elif key in propagation_nodes: 
@@ -90,7 +89,6 @@ def build_mri_graph(failure_point):
                 graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
                 
         elif is_drift:
-            # 🌫️ DRIFT MODE (Fading Intent Fidelity)
             if key == "query":
                 graph.node(key, label, fillcolor="#e6f3ff", color="#0066cc", penwidth="3")
             elif key in ["retriever", "memory"]:
@@ -103,7 +101,6 @@ def build_mri_graph(failure_point):
                 graph.node(key, label, fillcolor="#f2f2f2", color="#999999", penwidth="1")
                 
         elif is_blindspot:
-            # 🔍 BLIND SPOT MODE (Attention Collapse)
             if key in ["retriever", "memory"]:
                 graph.node(key, label + "\n(Context Stuffed)", fillcolor="#eaeaea", color="#777777", penwidth="2")
             elif key == "agent":
@@ -112,7 +109,6 @@ def build_mri_graph(failure_point):
                 graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
                 
         else:
-            # 💥 HARD CRASH MODE (Red/Orange)
             if key == failure_point:
                 graph.node(key, label, fillcolor="#ffcccc", color="red", penwidth="2")
             elif key in propagation_nodes:
@@ -120,7 +116,6 @@ def build_mri_graph(failure_point):
             else:
                 graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
 
-    # Draw the Edges (Connections)
     if is_drift:
         graph.edge("query", "retriever", color="#0066cc", penwidth="3", label=" 100% Intent")
         graph.edge("query", "memory", color="#0066cc", penwidth="3")
@@ -132,7 +127,6 @@ def build_mri_graph(failure_point):
     elif is_blindspot:
         graph.edge("query", "retriever", color="#00aa00", penwidth="2.5", label=" 95% Attention")
         graph.edge("query", "memory", color="#00aa00", penwidth="2.5")
-        # The Middle Retriever stream collapses into a blind spot
         graph.edge("retriever", "agent", color="#ff3333", penwidth="1", style="dotted", label=" 4% Attention (Blind Spot)")
         graph.edge("memory", "agent", color="#00aa00", penwidth="2.5", label=" 92% Attention")
         graph.edge("agent", "llm", color="#66b3ff", penwidth="2")
@@ -156,7 +150,6 @@ def call_ai(prompt, system_prompt="You are a helpful AI assistant."):
     if ai_mode == "Universal (Local / OpenRouter / Cloud)":
         try:
             headers = {"Content-Type": "application/json"}
-            
             if custom_api_key:
                 headers["Authorization"] = f"Bearer {custom_api_key}"
                 headers["HTTP-Referer"] = "https://github.com/bhavesh576/ai-workflow-mri"
@@ -170,13 +163,10 @@ def call_ai(prompt, system_prompt="You are a helpful AI assistant."):
                 ],
                 "temperature": 0.7
             }
-            
             response = requests.post(local_api_url, headers=headers, json=data)
-            
             if response.status_code == 200:
                 return response.json()['choices'][0]['message']['content']
             return f"Server Error {response.status_code}: {response.text}"
-            
         except Exception as e:
             return f"Connection Failed. Details: {str(e)}"
             
@@ -201,7 +191,7 @@ else:
     live_error = "No external error logs found."
 
 # ==========================================
-# 7. MAIN UI WITH 3 TABS
+# 7. MAIN UI
 # ==========================================
 st.title("🧠 AI Workflow MRI")
 st.markdown("### Visualizing Hidden Failures in Complex AI Systems")
@@ -256,9 +246,7 @@ with tab1:
             explanation = call_ai(sim_prompt, "You are a Senior AI Observability Engineer.")
             st.error(f"**Diagnostic Report:**\n\n{explanation}")
 
-# =========================================================
-        # 🔬 NEW: LIVE COGNITIVE SANDBOX (DYNAMIC PROBING LAYER)
-        # =========================================================
+        # --- LIVE COGNITIVE SANDBOX ---
         st.markdown("---")
         st.markdown("### 🧪 Live Cognitive Sandbox")
         st.caption("Input real pipeline payloads below. The active engine will perform an automated semantic analysis to evaluate real-time cognitive health indices.")
@@ -295,66 +283,80 @@ with tab1:
                 Entropy: [Grade]
                 Analysis: [Your single sentence description]
                 """
-                
                 raw_probe_result = call_ai(probe_prompt, "You are a precise cognitive profiling utility.")
                 
                 try:
-                    # Parse the structured response fields smoothly
                     lines = raw_probe_result.strip().split('\n')
                     fidelity_score = "85%"
                     entropy_grade = "Stable"
                     analysis_text = raw_probe_result
-                    
                     for line in lines:
                         if line.startswith("Fidelity:"): fidelity_score = line.replace("Fidelity:", "").strip()
                         elif line.startswith("Entropy:"): entropy_grade = line.replace("Entropy:", "").strip()
                         elif line.startswith("Analysis:"): analysis_text = line.replace("Analysis:", "").strip()
 
-                    # Render beautiful metrics panel
                     st.markdown("#### 📊 Real-Time Diagnostic Vitals")
                     metric_col1, metric_col2 = st.columns(2)
                     with metric_col1:
                         st.metric(label="Intent Fidelity", value=fidelity_score, delta="-15%" if "100" not in fidelity_score else "Nominal")
                     with metric_col2:
                         st.metric(label="Semantic Entropy State", value=entropy_grade)
-                    
                     st.info(f"**Causal Vector Analysis:** {analysis_text}")
-                except Exception as eval_err:
-                    st.warning("Telemetry response parsed with generic wrapper:")
+                except Exception as e:
                     st.write(raw_probe_result)
 
 # ---------------------------------------------------------
-# TAB 2: STATIC CODE ANALYZER
+# TAB 2: STATIC CODE ANALYZER (UPGRADED VERSION)
 # ---------------------------------------------------------
 with tab2:
-    st.markdown("#### 💻 Code-Aware Diagnostic Engine")
-    default_code = """import pandas as pd\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.ensemble import RandomForestClassifier\n\n# 1. Ingest Data\ndata = pd.read_csv('user_data.csv')\nX, y = data.drop('target', axis=1), data['target']\n\n# 2. Define ML Pipeline\npipeline = Pipeline([\n    ('scaler', StandardScaler()),\n    ('classifier', RandomForestClassifier(n_estimators=100))\n])\n\n# 3. Execute Pipeline\npipeline.fit(X, y)\npredictions = pipeline.predict(X)"""
-    custom_code = st.text_area("1. Paste ML Pipeline Code:", value=default_code, height=250)
+    st.markdown("#### 💻 Code-Aware Diagnostic Engine & Vulnerability Profiler")
+    st.caption("Paste your production pipeline execution scripts below. The core observer will dynamically construct an architectural blast radius matrix.")
+    
+    default_code = """import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+
+# 1. Ingest Data
+data = pd.read_csv('user_data.csv')
+X, y = data.drop('target', axis=1), data['target']
+
+# 2. Define ML Pipeline
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('classifier', RandomForestClassifier(n_estimators=100))
+])
+
+# 3. Execute Pipeline
+pipeline.fit(X, y)
+predictions = pipeline.predict(X)"""
+
+    custom_code = st.text_area("1. Paste ML Pipeline Code:", value=default_code, height=200)
     col_a, col_b = st.columns(2)
     with col_a:
-        failure_point = st.text_input("2. Which component/variable crashed?", value="StandardScaler")
+        failure_point = st.text_input("2. Target Identity Vector / Component Name:", value="StandardScaler")
     with col_b:
-        error_symptom = st.text_input("3. (Optional) Paste an error log:", value="ValueError: Input contains NaN, infinity or a value too large.")
+        error_symptom = st.text_input("3. Exception Symptom / Error Log Trace:", value="ValueError: Input contains NaN, infinity or a value too large.")
 
-    if st.button("🚨 Run Code-Level Diagnostic", type="primary"):
+    if st.button("🚨 Run Cognitive Code Audit", type="primary"):
         st.markdown("---")
-        st.markdown(f"### 🔬 Diagnostic Report: `{failure_point}`")
-        with st.spinner("Analyzing code structure and mapping blast radius..."):
+        st.markdown(f"### 🔬 Architectural Audit Report: `{failure_point}`")
+        
+        with st.spinner("Analyzing code hierarchy and parsing structural safety vectors..."):
             diagnostic_prompt = f"""
-            Analyze this ML Pipeline Code:
+            Analyze this ML Pipeline Code execution script:
             ```python
             {custom_code}
             ```
-            A critical failure occurred at: {failure_point}
-            Error/Symptom: {error_symptom}
-            Task: 
-            1. Identify how this specific failure disrupts the code execution path. 
-            2. Explain the blast radius. 
-            3. Provide ONE highly specific code-level fix. 
-            Keep it under 4 sentences.
+            A failure occurred at component: {failure_point}
+            Symptom payload: {error_symptom}
+            
+            Task:
+            1. Write a precise 3-sentence technical deduction outlining how this structural exception forces a downstream cascade.
+            2. Build an architectural 'Blast Radius Risk Matrix' Markdown Table with the columns: | Component | Vulnerability Type | Severity | Mitigation Control |. Populate it with rows addressing the target failed node, cascading impacts to subsequent pipeline fitting operations, and final artifact/variable starvation.
             """
-            explanation = call_ai(diagnostic_prompt, "You are an expert Python code analyzer.")
-            st.error(explanation)
+            explanation = call_ai(diagnostic_prompt, "You are a Principal AI Systems Observability Engineer.")
+            st.markdown(explanation)
 
 # ---------------------------------------------------------
 # TAB 3: LIVE PRODUCTION MONITOR
