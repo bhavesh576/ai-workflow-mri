@@ -70,6 +70,7 @@ def build_mri_graph(failure_point):
     propagation_nodes = []
     is_virus = (failure_point == "hallucination")
     is_drift = (failure_point == "drift")
+    is_blindspot = (failure_point == "blindspot")
 
     if failure_point in ["retriever", "memory", "hallucination"]:
         propagation_nodes = ["agent", "llm", "output"]
@@ -91,15 +92,24 @@ def build_mri_graph(failure_point):
         elif is_drift:
             # 🌫️ DRIFT MODE (Fading Intent Fidelity)
             if key == "query":
-                graph.node(key, label, fillcolor="#e6f3ff", color="#0066cc", penwidth="3") # Strong
+                graph.node(key, label, fillcolor="#e6f3ff", color="#0066cc", penwidth="3")
             elif key in ["retriever", "memory"]:
-                graph.node(key, label, fillcolor="#e6f3ff", color="#3399ff", penwidth="2") # Good
+                graph.node(key, label, fillcolor="#e6f3ff", color="#3399ff", penwidth="2")
             elif key == "agent":
-                graph.node(key, label, fillcolor="#fff2cc", color="#ffcc00", penwidth="2") # Drifting
+                graph.node(key, label, fillcolor="#fff2cc", color="#ffcc00", penwidth="2")
             elif key == "llm":
-                graph.node(key, label, fillcolor="#ffe6e6", color="#ff6666", penwidth="1.5") # Severely drifting
+                graph.node(key, label, fillcolor="#ffe6e6", color="#ff6666", penwidth="1.5")
             elif key == "output":
-                graph.node(key, label, fillcolor="#f2f2f2", color="#999999", penwidth="1") # Completely lost
+                graph.node(key, label, fillcolor="#f2f2f2", color="#999999", penwidth="1")
+                
+        elif is_blindspot:
+            # 🔍 BLIND SPOT MODE (Attention Collapse)
+            if key in ["retriever", "memory"]:
+                graph.node(key, label + "\n(Context Stuffed)", fillcolor="#eaeaea", color="#777777", penwidth="2")
+            elif key == "agent":
+                graph.node(key, label + "\n(Attention Starved)", fillcolor="#ffcccc", color="red", penwidth="2.5")
+            else:
+                graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
                 
         else:
             # 💥 HARD CRASH MODE (Red/Orange)
@@ -112,13 +122,22 @@ def build_mri_graph(failure_point):
 
     # Draw the Edges (Connections)
     if is_drift:
-        # Custom edges showing the exact moment the goal gets lost
         graph.edge("query", "retriever", color="#0066cc", penwidth="3", label=" 100% Intent")
         graph.edge("query", "memory", color="#0066cc", penwidth="3")
         graph.edge("retriever", "agent", color="#3399ff", penwidth="2", label=" 85% Intent")
         graph.edge("memory", "agent", color="#3399ff", penwidth="2")
         graph.edge("agent", "llm", color="#ffcc00", penwidth="1.5", style="dashed", label=" 40% Intent")
         graph.edge("llm", "output", color="#ff6666", penwidth="1", style="dotted", label=" 12% Intent")
+        
+    elif is_blindspot:
+        graph.edge("query", "retriever", color="#00aa00", penwidth="2.5", label=" 95% Attention")
+        graph.edge("query", "memory", color="#00aa00", penwidth="2.5")
+        # The Middle Retriever stream collapses into a blind spot
+        graph.edge("retriever", "agent", color="#ff3333", penwidth="1", style="dotted", label=" 4% Attention (Blind Spot)")
+        graph.edge("memory", "agent", color="#00aa00", penwidth="2.5", label=" 92% Attention")
+        graph.edge("agent", "llm", color="#66b3ff", penwidth="2")
+        graph.edge("llm", "output", color="#66b3ff", penwidth="2")
+        
     else:
         for start, end in EDGES:
             if is_virus and (start == "retriever" or start in propagation_nodes):
@@ -129,6 +148,7 @@ def build_mri_graph(failure_point):
                 graph.edge(start, end, color="gray")
             
     return graph
+
 # ==========================================
 # 6. UNIVERSAL AI ENGINE
 # ==========================================
@@ -200,20 +220,20 @@ with tab1:
     col1, col2 = st.columns([1, 2.5])
     
     with col1:
-        # Added 'drift' to the options list
         scenario_sim = st.selectbox(
             "Select a system component to fail:",
-            options=["healthy", "retriever", "memory", "agent", "llm", "hallucination", "drift"],
+            options=["healthy", "retriever", "memory", "agent", "llm", "hallucination", "drift", "blindspot"],
             format_func=lambda x: {
                 "healthy": "Healthy (No Errors)",
                 "hallucination": "🦠 Semantic Contagion (Hallucination)",
-                "drift": "🌫️ Semantic Goal Drift (Intent Decay)"
+                "drift": "🌫️ Semantic Goal Drift (Intent Decay)",
+                "blindspot": "🔍 Context Window Blind Spot (Attention Collapse)"
             }.get(x, f"💥 Simulate {WORKFLOW_NODES.get(x, x)} Crash"),
             key="sim_dropdown" 
         )
         st.markdown("---")
         st.markdown("**Infrastructure Legend:**\n🟦 Healthy | 🟥 Hard Crash | 🟨 Data Starvation")
-        st.markdown("**Cognitive Legend:**\n🟪 Semantic Infection | 🌫️ Intent Decay (Drift)")
+        st.markdown("**Cognitive Legend:**\n🟪 Semantic Infection | 🌫️ Intent Decay (Drift) | 🔍 Attention Blind Spot")
         
     with col2:
         mri_graph = build_mri_graph(scenario_sim)
@@ -227,8 +247,9 @@ with tab1:
             if scenario_sim == "hallucination":
                 sim_prompt = "A False Fact (Hallucination) was retrieved by the Vector DB. Explain the concept of 'Epistemic Laundering' and how this false fact invisibly infects the downstream reasoning agents and final LLM output in 3 technical sentences."
             elif scenario_sim == "drift":
-                # NEW PROMPT for the drift scenario
                 sim_prompt = "The system is experiencing 'Semantic Goal Drift'. The user asked a complex question, but by the time the data reached the final LLM, the original intent degraded to 12% fidelity. Explain how 'Intent Decay' happens in long multi-agent chains and how to fix it in 3 technical sentences."
+            elif scenario_sim == "blindspot":
+                sim_prompt = "The system is suffering from an 'Attention Collapse' or 'Lost in the Middle' failure where crucial data hidden in the middle of a long context window is ignored by the LLM. Explain why Transformers inherently possess this context window blind spot and how dynamic context compression can fix it in 3 technical sentences."
             else:
                 sim_prompt = f"A hard infrastructure crash originated at '{WORKFLOW_NODES[scenario_sim]}'. Explain how it propagates and why it starves the downstream components in 3 sentences."
             
