@@ -63,7 +63,10 @@ def build_mri_graph(failure_point):
     graph.attr(rankdir='LR', bgcolor='transparent') 
 
     propagation_nodes = []
-    if failure_point in ["retriever", "memory"]:
+    is_virus = (failure_point == "hallucination")
+
+    # Define the blast radius / infection zone
+    if failure_point in ["retriever", "memory", "hallucination"]:
         propagation_nodes = ["agent", "llm", "output"]
     elif failure_point == "agent":
         propagation_nodes = ["llm", "output"]
@@ -71,18 +74,34 @@ def build_mri_graph(failure_point):
         propagation_nodes = ["output"]
 
     for key, label in WORKFLOW_NODES.items():
-        if key == failure_point:
-            graph.node(key, label, fillcolor="#ffcccc", color="red", penwidth="2")
-        elif key in propagation_nodes:
-            graph.node(key, label, fillcolor="#fff2cc", color="orange", penwidth="2")
+        if is_virus:
+            # 🦠 VIRUS MODE (Purple Semantic Drift)
+            if key == "retriever": # Patient Zero
+                graph.node(key, label, fillcolor="#d9b3ff", color="#8000ff", penwidth="2")
+            elif key in propagation_nodes: # Infected Downstream
+                graph.node(key, label, fillcolor="#f2e6ff", color="#b366ff", penwidth="2")
+            else:
+                graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
         else:
-            graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
+            # 💥 HARD CRASH MODE (Red/Orange)
+            if key == failure_point:
+                graph.node(key, label, fillcolor="#ffcccc", color="red", penwidth="2")
+            elif key in propagation_nodes:
+                graph.node(key, label, fillcolor="#fff2cc", color="orange", penwidth="2")
+            else:
+                graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
 
+    # Draw the Edges (Connections)
     for start, end in EDGES:
-        if start == failure_point or (start in propagation_nodes and end in propagation_nodes):
+        if is_virus and (start == "retriever" or start in propagation_nodes):
+            # Dashed purple lines to show semantic infection spreading
+            graph.edge(start, end, color="#8000ff", penwidth="2", style="dashed")
+        elif start == failure_point or (start in propagation_nodes and end in propagation_nodes):
+            # Solid red lines for hard failures
             graph.edge(start, end, color="red", penwidth="2")
         else:
             graph.edge(start, end, color="gray")
+            
     return graph
 
 # ==========================================
@@ -147,14 +166,16 @@ with tab1:
     col1, col2 = st.columns([1, 2.5])
     
     with col1:
+        # Added 'hallucination' to the options
         scenario_sim = st.selectbox(
             "Select a system component to fail:",
-            options=["healthy", "retriever", "memory", "agent", "llm"],
-            format_func=lambda x: "Healthy (No Errors)" if x == "healthy" else f"Simulate {WORKFLOW_NODES[x]} Failure",
+            options=["healthy", "retriever", "memory", "agent", "llm", "hallucination"],
+            format_func=lambda x: "Healthy (No Errors)" if x == "healthy" else ("🦠 Semantic Contagion (Hallucination)" if x == "hallucination" else f"💥 Simulate {WORKFLOW_NODES[x]} Crash"),
             key="sim_dropdown" 
         )
         st.markdown("---")
-        st.markdown("**Legend:**\n🟦 Healthy | 🟥 Root Cause | 🟨 Blast Radius")
+        st.markdown("**Infrastructure Legend:**\n🟦 Healthy | 🟥 Hard Crash | 🟨 Data Starvation")
+        st.markdown("**Cognitive Legend:**\n🟪 Patient Zero | 🪻 Semantic Infection")
         
     with col2:
         mri_graph = build_mri_graph(scenario_sim)
@@ -165,8 +186,12 @@ with tab1:
         st.success("**Status:** System is operating nominally.")
     else:
         with st.spinner(f"Generating MRI Diagnostic Report..."):
-            sim_prompt = f"A failure originated at '{WORKFLOW_NODES[scenario_sim]}'. Explain how it propagates and why it fails in 3 sentences."
-            explanation = call_ai(sim_prompt, "You are a technical diagnostic assistant.")
+            if scenario_sim == "hallucination":
+                sim_prompt = "A False Fact (Hallucination) was retrieved by the Vector DB. Explain the concept of 'Epistemic Laundering' and how this false fact invisibly infects the downstream reasoning agents and final LLM output in 3 technical sentences."
+            else:
+                sim_prompt = f"A hard infrastructure crash originated at '{WORKFLOW_NODES[scenario_sim]}'. Explain how it propagates and why it starves the downstream components in 3 sentences."
+            
+            explanation = call_ai(sim_prompt, "You are a Senior AI Observability & Safety Engineer.")
             st.error(f"**Diagnostic Report:**\n\n{explanation}")
 
 # ---------------------------------------------------------
