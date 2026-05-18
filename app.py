@@ -246,7 +246,6 @@ with tab1:
             explanation = call_ai(sim_prompt, "You are a Senior AI Observability Engineer.")
             st.error(f"**Diagnostic Report:**\n\n{explanation}")
 
-        # --- LIVE COGNITIVE SANDBOX ---
         st.markdown("---")
         st.markdown("### 🧪 Live Cognitive Sandbox")
         st.caption("Input real pipeline payloads below. The active engine will perform an automated semantic analysis to evaluate real-time cognitive health indices.")
@@ -306,7 +305,7 @@ with tab1:
                     st.write(raw_probe_result)
 
 # ---------------------------------------------------------
-# TAB 2: STATIC CODE ANALYZER (UPGRADED VERSION)
+# TAB 2: STATIC CODE ANALYZER
 # ---------------------------------------------------------
 with tab2:
     st.markdown("#### 💻 Code-Aware Diagnostic Engine & Vulnerability Profiler")
@@ -359,25 +358,52 @@ predictions = pipeline.predict(X)"""
             st.markdown(explanation)
 
 # ---------------------------------------------------------
-# TAB 3: LIVE PRODUCTION MONITOR
+# TAB 3: LIVE PRODUCTION MONITOR (UPGRADED VERSION)
 # ---------------------------------------------------------
 with tab3:
-    st.markdown("#### 📡 Real-Time Script Monitoring")
+    st.markdown("#### 📡 Real-Time Telemetry Processing Stream")
+    st.caption("This system actively listens to shared production environments via file-based mailbox protocols.")
     st.markdown(f"**Current Shared Pipeline Status:** `{live_scenario.upper()}`")
+    
+    # NEW: Live Telemetry Injection Control Panel
+    st.markdown("##### 🛰️ Forged Cloud Stream Simulator")
+    mock_col1, mock_col2, mock_col3 = st.columns(3)
+    
+    with mock_col1:
+        if st.button("💥 Forge Infrastructure Timeout", use_container_width=True):
+            payload = {"status": "retriever", "error": "CRASH Timeout: Could not connect to Vector DB at port 5432."}
+            with open("pipeline_status.json", "w") as f: json.dump(payload, f)
+            st.rerun()
+            
+    with mock_col2:
+        if st.button("🦠 Forge Memory Poisoning Event", use_container_width=True):
+            payload = {"status": "hallucination", "error": "ADVERSARIAL ATTACK: Context hijacked by malicious document injection. System output exhibiting systemic epistemic laundering."}
+            with open("pipeline_status.json", "w") as f: json.dump(payload, f)
+            st.rerun()
+            
+    with mock_col3:
+        if st.button("🌫️ Forge Trajectory Goal Drift", use_container_width=True):
+            payload = {"status": "drift", "error": "PATHOLOGY ALERT: Causal chain length exceeded 25 execution hops. Constraint fidelity decayed below critical baseline boundary constraints."}
+            with open("pipeline_status.json", "w") as f: json.dump(payload, f)
+            st.rerun()
+
+    st.markdown("---")
     col_live_a, col_live_b = st.columns([1, 2.5])
     
     with col_live_a:
-        st.markdown("#### Status Details")
+        st.markdown("#### Active Stream State")
         if live_scenario == "healthy":
-            st.success("All clear! No script errors detected.")
+            st.success("Nominal Operation: No operational or cognitive fault metrics triggered.")
         else:
             if live_scenario == "hallucination":
                 st.error(f"🦠 COGNITIVE INFECTION DETECTED: {WORKFLOW_NODES['retriever'].upper()}")
+            elif live_scenario == "drift":
+                st.warning(f"🌫️ TRAJECTORY GOAL LOSS DETECTED: AI WORKFLOW COGNITION")
             else:
-                st.error(f"💥 CRASH DETECTED AT: {WORKFLOW_NODES.get(live_scenario, live_scenario).upper()}")
-            st.text_area("Captured Error Log / Symptom:", value=live_error, height=100)
+                st.error(f"💥 STRUCTURAL EXCEPTION DETECTED: {WORKFLOW_NODES.get(live_scenario, live_scenario).upper()}")
+            st.text_area("Live Production Stream Package Log:", value=live_error, height=120)
             
-        if st.button("🧹 Clear Live Error File"):
+        if st.button("🧹 Flush Active Stream Mailbox", type="primary"):
             if os.path.exists("pipeline_status.json"):
                 os.remove("pipeline_status.json")
                 st.rerun() 
@@ -388,12 +414,12 @@ with tab3:
         
     st.markdown("---")
     if live_scenario != "healthy":
-        st.markdown("### 🤖 Automated Causal Diagnostic")
-        with st.spinner("Analyzing live log data via AI..."):
+        st.markdown("### 🤖 Live Stream Real-Time Causal Analyzer")
+        with st.spinner("Decoding telemetry payload parameters..."):
             diagnostic_prompt = f"""
-            The live ML pipeline script experienced an event at '{WORKFLOW_NODES.get(live_scenario, live_scenario)}' 
-            with the log/symptom: '{live_error}'. 
-            Explain the downstream blast radius in 3 sentences.
+            The active live pipeline stream triggered an incident at step state '{WORKFLOW_NODES.get(live_scenario, live_scenario)}' 
+            displaying log telemetry data: '{live_error}'. 
+            Deduce the system-level cascade and immediate mitigation roadmap in 3 technical sentences.
             """
-            explanation = call_ai(diagnostic_prompt, "You are an expert systems debugging assistant.")
+            explanation = call_ai(diagnostic_prompt, "You are a Senior Systems Site Reliability Engineer.")
             st.error(explanation)
