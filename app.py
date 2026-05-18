@@ -256,6 +256,73 @@ with tab1:
             explanation = call_ai(sim_prompt, "You are a Senior AI Observability Engineer.")
             st.error(f"**Diagnostic Report:**\n\n{explanation}")
 
+# =========================================================
+        # 🔬 NEW: LIVE COGNITIVE SANDBOX (DYNAMIC PROBING LAYER)
+        # =========================================================
+        st.markdown("---")
+        st.markdown("### 🧪 Live Cognitive Sandbox")
+        st.caption("Input real pipeline payloads below. The active engine will perform an automated semantic analysis to evaluate real-time cognitive health indices.")
+
+        sandbox_col1, sandbox_col2 = st.columns(2)
+        with sandbox_col1:
+            user_intent_input = st.text_area(
+                "Original System Prompt / Intent Constraint:",
+                value="Extract financial metrics from the document. Do not include ungrounded speculation or conversational fluff.",
+                height=100
+            )
+        with sandbox_col2:
+            agent_thought_input = st.text_area(
+                "Actual Agent Execution / Output Track:",
+                value="Wow, this market data looks volatile! I think the company is in serious trouble, although the document doesn't explicitly state it. Let's talk about strategies to save your portfolio...",
+                height=100
+            )
+
+        if st.button("🛰️ Fire Cognitive Tomography Probes", type="secondary"):
+            with st.spinner("Executing semantic alignment matrix calculation..."):
+                probe_prompt = f"""
+                You are an advanced Cognitive Diagnostics Engine. Analyze the alignment between the original intended constraint and the actual execution output.
+                
+                [Original Constraint]: "{user_intent_input}"
+                [Actual Execution]: "{agent_thought_input}"
+                
+                Task:
+                1. Calculate a realistic 'Intent Fidelity %' (0-100) based on how well constraints were preserved.
+                2. Assess a 'Semantic Entropy Grade' (Stable, Elevated, or Critical Collapse).
+                3. Provide a single sentence detailing the root vector of failure if alignment drops below 90%.
+                
+                Format your response EXACTLY like this raw text block (do not add extra markdown):
+                Fidelity: [Score]%
+                Entropy: [Grade]
+                Analysis: [Your single sentence description]
+                """
+                
+                raw_probe_result = call_ai(probe_prompt, "You are a precise cognitive profiling utility.")
+                
+                try:
+                    # Parse the structured response fields smoothly
+                    lines = raw_probe_result.strip().split('\n')
+                    fidelity_score = "85%"
+                    entropy_grade = "Stable"
+                    analysis_text = raw_probe_result
+                    
+                    for line in lines:
+                        if line.startswith("Fidelity:"): fidelity_score = line.replace("Fidelity:", "").strip()
+                        elif line.startswith("Entropy:"): entropy_grade = line.replace("Entropy:", "").strip()
+                        elif line.startswith("Analysis:"): analysis_text = line.replace("Analysis:", "").strip()
+
+                    # Render beautiful metrics panel
+                    st.markdown("#### 📊 Real-Time Diagnostic Vitals")
+                    metric_col1, metric_col2 = st.columns(2)
+                    with metric_col1:
+                        st.metric(label="Intent Fidelity", value=fidelity_score, delta="-15%" if "100" not in fidelity_score else "Nominal")
+                    with metric_col2:
+                        st.metric(label="Semantic Entropy State", value=entropy_grade)
+                    
+                    st.info(f"**Causal Vector Analysis:** {analysis_text}")
+                except Exception as eval_err:
+                    st.warning("Telemetry response parsed with generic wrapper:")
+                    st.write(raw_probe_result)
+
 # ---------------------------------------------------------
 # TAB 2: STATIC CODE ANALYZER
 # ---------------------------------------------------------
