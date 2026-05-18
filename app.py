@@ -69,6 +69,7 @@ def build_mri_graph(failure_point):
 
     propagation_nodes = []
     is_virus = (failure_point == "hallucination")
+    is_drift = (failure_point == "drift")
 
     if failure_point in ["retriever", "memory", "hallucination"]:
         propagation_nodes = ["agent", "llm", "output"]
@@ -79,13 +80,27 @@ def build_mri_graph(failure_point):
 
     for key, label in WORKFLOW_NODES.items():
         if is_virus:
-            # 🦠 VIRUS MODE (Purple Semantic Drift)
+            # 🦠 VIRUS MODE (Purple Semantic Infection)
             if key == "retriever": 
                 graph.node(key, label, fillcolor="#d9b3ff", color="#8000ff", penwidth="2")
             elif key in propagation_nodes: 
                 graph.node(key, label, fillcolor="#f2e6ff", color="#b366ff", penwidth="2")
             else:
                 graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
+                
+        elif is_drift:
+            # 🌫️ DRIFT MODE (Fading Intent Fidelity)
+            if key == "query":
+                graph.node(key, label, fillcolor="#e6f3ff", color="#0066cc", penwidth="3") # Strong
+            elif key in ["retriever", "memory"]:
+                graph.node(key, label, fillcolor="#e6f3ff", color="#3399ff", penwidth="2") # Good
+            elif key == "agent":
+                graph.node(key, label, fillcolor="#fff2cc", color="#ffcc00", penwidth="2") # Drifting
+            elif key == "llm":
+                graph.node(key, label, fillcolor="#ffe6e6", color="#ff6666", penwidth="1.5") # Severely drifting
+            elif key == "output":
+                graph.node(key, label, fillcolor="#f2f2f2", color="#999999", penwidth="1") # Completely lost
+                
         else:
             # 💥 HARD CRASH MODE (Red/Orange)
             if key == failure_point:
@@ -95,16 +110,25 @@ def build_mri_graph(failure_point):
             else:
                 graph.node(key, label, fillcolor="#e6f3ff", color="#66b3ff")
 
-    for start, end in EDGES:
-        if is_virus and (start == "retriever" or start in propagation_nodes):
-            graph.edge(start, end, color="#8000ff", penwidth="2", style="dashed")
-        elif start == failure_point or (start in propagation_nodes and end in propagation_nodes):
-            graph.edge(start, end, color="red", penwidth="2")
-        else:
-            graph.edge(start, end, color="gray")
+    # Draw the Edges (Connections)
+    if is_drift:
+        # Custom edges showing the exact moment the goal gets lost
+        graph.edge("query", "retriever", color="#0066cc", penwidth="3", label=" 100% Intent")
+        graph.edge("query", "memory", color="#0066cc", penwidth="3")
+        graph.edge("retriever", "agent", color="#3399ff", penwidth="2", label=" 85% Intent")
+        graph.edge("memory", "agent", color="#3399ff", penwidth="2")
+        graph.edge("agent", "llm", color="#ffcc00", penwidth="1.5", style="dashed", label=" 40% Intent")
+        graph.edge("llm", "output", color="#ff6666", penwidth="1", style="dotted", label=" 12% Intent")
+    else:
+        for start, end in EDGES:
+            if is_virus and (start == "retriever" or start in propagation_nodes):
+                graph.edge(start, end, color="#8000ff", penwidth="2", style="dashed")
+            elif start == failure_point or (start in propagation_nodes and end in propagation_nodes):
+                graph.edge(start, end, color="red", penwidth="2")
+            else:
+                graph.edge(start, end, color="gray")
             
     return graph
-
 # ==========================================
 # 6. UNIVERSAL AI ENGINE
 # ==========================================
@@ -176,15 +200,20 @@ with tab1:
     col1, col2 = st.columns([1, 2.5])
     
     with col1:
+        # Added 'drift' to the options list
         scenario_sim = st.selectbox(
             "Select a system component to fail:",
-            options=["healthy", "retriever", "memory", "agent", "llm", "hallucination"],
-            format_func=lambda x: "Healthy (No Errors)" if x == "healthy" else ("🦠 Semantic Contagion (Hallucination)" if x == "hallucination" else f"💥 Simulate {WORKFLOW_NODES[x]} Crash"),
+            options=["healthy", "retriever", "memory", "agent", "llm", "hallucination", "drift"],
+            format_func=lambda x: {
+                "healthy": "Healthy (No Errors)",
+                "hallucination": "🦠 Semantic Contagion (Hallucination)",
+                "drift": "🌫️ Semantic Goal Drift (Intent Decay)"
+            }.get(x, f"💥 Simulate {WORKFLOW_NODES.get(x, x)} Crash"),
             key="sim_dropdown" 
         )
         st.markdown("---")
         st.markdown("**Infrastructure Legend:**\n🟦 Healthy | 🟥 Hard Crash | 🟨 Data Starvation")
-        st.markdown("**Cognitive Legend:**\n🟪 Patient Zero | 🪻 Semantic Infection")
+        st.markdown("**Cognitive Legend:**\n🟪 Semantic Infection | 🌫️ Intent Decay (Drift)")
         
     with col2:
         mri_graph = build_mri_graph(scenario_sim)
@@ -197,6 +226,9 @@ with tab1:
         with st.spinner(f"Generating MRI Diagnostic Report..."):
             if scenario_sim == "hallucination":
                 sim_prompt = "A False Fact (Hallucination) was retrieved by the Vector DB. Explain the concept of 'Epistemic Laundering' and how this false fact invisibly infects the downstream reasoning agents and final LLM output in 3 technical sentences."
+            elif scenario_sim == "drift":
+                # NEW PROMPT for the drift scenario
+                sim_prompt = "The system is experiencing 'Semantic Goal Drift'. The user asked a complex question, but by the time the data reached the final LLM, the original intent degraded to 12% fidelity. Explain how 'Intent Decay' happens in long multi-agent chains and how to fix it in 3 technical sentences."
             else:
                 sim_prompt = f"A hard infrastructure crash originated at '{WORKFLOW_NODES[scenario_sim]}'. Explain how it propagates and why it starves the downstream components in 3 sentences."
             
