@@ -31,9 +31,10 @@ if ai_mode == "Universal (Local / OpenRouter / Cloud)":
     st.sidebar.markdown("**🌐 Universal Connection**")
     st.sidebar.caption("Works with Ollama, LM Studio, OpenRouter, OpenAI, etc.")
     
-    local_api_url = st.sidebar.text_input("API Endpoint URL", value="http://localhost:11434/v1/chat/completions")
+    # Setting your requested OpenRouter parameters as the system defaults
+    local_api_url = st.sidebar.text_input("API Endpoint URL", value="https://openrouter.ai/api/v1/chat/completions")
     local_model_name = st.sidebar.text_input("Model ID", value="openrouter/free")
-    custom_api_key = st.sidebar.text_input("API Key (Leave blank for local)", type="password")
+    custom_api_key = st.sidebar.text_input("API Key (Leave blank for local)", value="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", type="password")
 
 elif ai_mode == "Google Gemini":
     st.sidebar.markdown("**☁️ Native Google Connection**")
@@ -305,20 +306,18 @@ with tab1:
                     st.write(raw_probe_result)
 
 # ---------------------------------------------------------
-# TAB 2: STATIC CODE ANALYZER (UPGRADED FOR MULTI-FILE SCANNING)
+# TAB 2: STATIC CODE ANALYZER
 # ---------------------------------------------------------
 with tab2:
     st.markdown("#### 💻 Code-Aware Diagnostic Engine & Vulnerability Profiler")
     st.caption("Analyze single execution scripts or upload an entire local project structure to map architectural blast radiuses.")
 
-    # NEW: Mode Selection Switch
     upload_mode = st.radio("Select Analysis Scope:", ["Single File Script", "Whole Project Directory"], horizontal=True)
     st.markdown("---")
 
     code_to_analyze = ""
 
     if upload_mode == "Single File Script":
-        # Standard Single File Input Box
         default_code = """import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -341,14 +340,12 @@ predictions = pipeline.predict(X)"""
         code_to_analyze = st.text_area("1. Paste ML Pipeline Code:", value=default_code, height=200)
 
     else:
-        # NEW: Multi-File Workspace Dropzone
         uploaded_files = st.file_uploader(
             "1. Drag & drop multiple project files (.py, .json) concurrently:", 
             type=["py", "json"], 
             accept_multiple_files=True
         )
         if uploaded_files:
-            # Aggregate all file contents into one unified context map for the AI
             for file in uploaded_files:
                 try:
                     file_contents = file.read().decode("utf-8")
@@ -358,7 +355,6 @@ predictions = pipeline.predict(X)"""
         else:
             st.info("📂 Awaiting multi-file workspace allocation. Drag your project scripts above to begin.")
 
-    # Context Input Columns (Stay the same)
     col_a, col_b = st.columns(2)
     with col_a:
         failure_point = st.text_input("2. Target Identity Vector / Component Name:", value="StandardScaler")
@@ -373,7 +369,6 @@ predictions = pipeline.predict(X)"""
             st.markdown(f"### 🔬 Architectural Audit Report: `{failure_point}`")
             
             with st.spinner("Analyzing modular code mapping and parsing architectural safety dependencies..."):
-                # The prompt now informs the AI it might be looking at a multi-file project structure!
                 diagnostic_prompt = f"""
                 Analyze this multi-file codebase structure:
                 ```
@@ -388,15 +383,15 @@ predictions = pipeline.predict(X)"""
                 """
                 explanation = call_ai(diagnostic_prompt, "You are a Principal AI Systems Observability Engineer.")
                 st.markdown(explanation)
+
 # ---------------------------------------------------------
-# TAB 3: LIVE PRODUCTION MONITOR (UPGRADED VERSION)
+# TAB 3: LIVE PRODUCTION MONITOR
 # ---------------------------------------------------------
 with tab3:
     st.markdown("#### 📡 Real-Time Telemetry Processing Stream")
     st.caption("This system actively listens to shared production environments via file-based mailbox protocols.")
     st.markdown(f"**Current Shared Pipeline Status:** `{live_scenario.upper()}`")
     
-    # NEW: Live Telemetry Injection Control Panel
     st.markdown("##### 🛰️ Forged Cloud Stream Simulator")
     mock_col1, mock_col2, mock_col3 = st.columns(3)
     
@@ -434,7 +429,7 @@ with tab3:
                 st.error(f"💥 STRUCTURAL EXCEPTION DETECTED: {WORKFLOW_NODES.get(live_scenario, live_scenario).upper()}")
             st.text_area("Live Production Stream Package Log:", value=live_error, height=120)
             
-        if st.button("🧹 Flush Active Stream Mailbox", type="primary"):
+        if st.button("🧹 Clear Live Error File", type="primary"):
             if os.path.exists("pipeline_status.json"):
                 os.remove("pipeline_status.json")
                 st.rerun() 
